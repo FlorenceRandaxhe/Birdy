@@ -43,7 +43,7 @@ const SiteList = () => {
                     </div>
                     <div className="map" style={{ height: '70vh', width: '100%' }}>
                         <GoogleMap
-                            bootstrapURLKeys={'AIzaSyDaH6M1rje-2oIlFkjlJ5QC4pAb79uEb3o'}
+                            bootstrapURLKeys={'API key'}
                             defaultCenter={{
                                 lat: 50.8432252,
                                 lng: 4.4638614
