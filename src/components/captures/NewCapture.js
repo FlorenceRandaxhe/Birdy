@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
 import firebase from 'firebase';
 
-import Nav from '../common/Nav';
 import Feedback from "../common/Feedback";
 
 const NewCapture = () => {
@@ -17,6 +16,8 @@ const NewCapture = () => {
     const [adiposity, setAdiposity] = useState ('');
     const [sexe, setSexe] = useState ('');
     const [age, setAge] = useState ('');
+    const [latitude, setLatitude] = useState (0);
+    const [longitude, setLongitude] = useState (0);
     const [empty, setEmpty] = useState(false);
     const [succes, setSucces] = useState(false);
     const currentUser = firebase.auth().currentUser;
@@ -37,8 +38,29 @@ const NewCapture = () => {
     const handleAge = (e) => {
         setAge(e.target.value)
     };
-    const handleNumber = (e) => {
-        setAge(e.target.value)
+    const handleLong = ({currentTarget: input}) => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                input.value = Math.round(position.coords.longitude*100)/100;
+                setLongitude(position.coords.longitude)
+            });
+        } else {
+            const long = input.value;
+            setLatitude(parseFloat(long))
+        }
+
+    };
+    const handleLat = ({currentTarget: input}) => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                input.value =  Math.round(position.coords.latitude*100)/100;
+                setLatitude(position.coords.latitude)
+            });
+        } else {
+            const lat = input.value;
+            setLatitude(parseFloat(lat))
+        }
+
     };
     const saveNewBird = (e) => {
         e.preventDefault();
@@ -51,6 +73,7 @@ const NewCapture = () => {
                 type:type,
                 date:date,
                 place:place,
+                geopoint: new firebase.firestore.GeoPoint(latitude, longitude),
                 name:name,
                 latin:latin,
                 number:number,
@@ -74,7 +97,7 @@ const NewCapture = () => {
     }
     return (
         <React.Fragment>
-            <section className="section__bird_list section_margin">
+            <section>
                 <h2>Nouvelle capture</h2>
                 <form action="#" method="POST" onSubmit={saveNewBird}>
                     <div className="form__control">
@@ -92,7 +115,7 @@ const NewCapture = () => {
                     </div>
                     <div className="form__control">
                         <label className="form__label" htmlFor="number">Quel est le numéro de bague&nbsp;?</label>
-                        <input onChange={(e) => setNumber(e.target.value)} className="form__input" type="text" id="number" name="number"/>
+                        <input onChange={(e) => setNumber(e.target.value)} className="form__input" type="text" id="number" name="number" placeholder="F18 12 001 UOF U195"/>
                     </div>
                     <div className="form__control">
                         <fieldset>
@@ -117,32 +140,40 @@ const NewCapture = () => {
                     </div>
                     <div className="form__control">
                         <label className="form__label" htmlFor="where">Où a-t-il été capturé&nbsp;?</label>
-                        <input onChange={(e) => setPlace(e.target.value)} className="form__input" type="text" id="where" name="where"/>
+                        <input onChange={(e) => setPlace(e.target.value)} className="form__input" type="text" id="where" name="where" placeholder="Liège"/>
+                    </div>
+                    <div className="form__control form__control--flex">
+                        <label className="" htmlFor="longitude">Longitude&nbsp;:</label>
+                        <input onChange={handleLong} className="form__input__small" type="number" step="0.01" min="-180" max="180" id="longitude" name="longitude" placeholder="55.6"/>
+                    </div>
+                    <div className="form__control form__control--flex">
+                        <label className="" htmlFor="latitude">Latitude&nbsp;:</label>
+                        <input onChange={handleLat} className="form__input__small" type="number" step="0.01" min="-90" max="90" id="latitude" name="latitude" placeholder="4.56"/>
                     </div>
                     <div className="form__control">
                         <label className="form__label" htmlFor="birdName">De quel oiseaux s'agit-il&nbsp;?</label>
-                        <input onChange={(e) => setName(e.target.value)} onChange={(e) => setName(e.target.value)} className="form__input" type="text" id="birdName" name="birdName"/>
+                        <input onChange={(e) => setName(e.target.value)} className="form__input" type="text" id="birdName" name="birdName" placeholder="Rouge gorge"/>
                     </div>
                     <div className="form__control">
                         <label className="form__label" htmlFor="latinName">Quel est le nom latin de l'oiseaux&nbsp;?</label>
-                        <input onChange={(e) => setLatin(e.target.value)} className="form__input" type="text" id="latinName" name="latinName"/>
+                        <input onChange={(e) => setLatin(e.target.value)} className="form__input" type="text" id="latinName" name="latinName" placeholder="nom latin"/>
                     </div>
                     <div className="form__control">
                         <label className="form__label" htmlFor="size">Longueur alaire</label>
                         <div className="form__control_small">
-                            <input onChange={(e) => setSize(e.target.value)} className="form__input_small" type="number" id="size" name="size"/> <span>cm</span>
+                            <input onChange={(e) => setSize(e.target.value)} className="form__input_small" type="number" id="size" name="size" placeholder="20"/> <span>cm</span>
                         </div>
                     </div>
                     <div className="form__control">
                         <label className="form__label" htmlFor="weight">Poids</label>
                         <div className="form__control_small">
-                            <input onChange={(e) => setWeight(e.target.value)} className="form__input_small" type="number" id="weight" name="weight"/> <span>grammes</span>
+                            <input onChange={(e) => setWeight(e.target.value)} className="form__input_small" type="number" id="weight" name="weight" placeholder="19"/> <span>grammes</span>
                         </div>
                     </div>
                     <div className="form__control">
                         <fieldset>
                             <legend>quel est l'adiposité de l'oiseaux&nbsp;?</legend>
-                            <div className="adiposity__container">
+                            <div className="form__inline">
                                 <div>
                                     <input type="radio" id="one" name="adiposity" value="1" onChange={handleAdiposity}/>
                                     <label htmlFor="one">1</label>
@@ -200,7 +231,7 @@ const NewCapture = () => {
                     </div>
                 </form>
             </section>
-            <Nav/>
+
         </React.Fragment>
     )
 };

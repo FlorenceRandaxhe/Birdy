@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Redirect} from "react-router-dom";
+import {Link, Redirect} from "react-router-dom";
+import Loader from '../common/Loader';
 import firebase from '../../config/config';
-import Nav from '../common/Nav';
 
 const UserList = () => {
     const [leState, setleState] = useState(null);
@@ -27,23 +27,22 @@ const UserList = () => {
         return <Redirect to='/'/>
     }
     if (leState === null) {
-        return (<div className="bouncing-loader"><div></div><div></div><div></div></div>);
+        return <Loader/>
     }
     return (
         <React.Fragment>
-            <section className="section__bird_list">
-                <div>
-                    <h2>Tous les utilisateurs</h2>
-                    <ul className="list__bird">
-                        {leState.map(doc => (
-                            <li key={doc.id} className="list__item__bird__home">
-                                {doc.name}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
+            <section>
+                <h2>Tous les utilisateurs</h2>
+                <ul className="list">
+                    {leState.map(user => (
+                        <li key={user.id} className="list__item">
+                            <Link to={{pathname: '/users/' + user.id}} className="link_over"><span className="sro">Voir</span></Link>
+                            <p>{user.name}</p>
+                        </li>
+                    ))}
+                </ul>
             </section>
-            <Nav/>
+
         </React.Fragment>
     )
 };

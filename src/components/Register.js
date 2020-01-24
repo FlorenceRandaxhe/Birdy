@@ -1,9 +1,8 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Link, Redirect} from "react-router-dom";
+import { Redirect} from "react-router-dom";
 import firebase from "../config/config";
 
 const Register = () => {
-
     const userMail = useRef('');
     const userId = useRef('');
     const userName = useRef('');
@@ -13,7 +12,6 @@ const Register = () => {
     const [emailError, setEmailError] = useState(false);
     const [emailUse, setEmailUse] = useState(false);
     const [weakPass, setWeakPass] = useState(false);
-    const auth = firebase.auth();
 
     const createUser = (e) => {
         e.preventDefault();
@@ -24,16 +22,14 @@ const Register = () => {
 
         if (mail === "" || name === "" || password === "" || id === "") {
             setEmptyField(true)
-        }
-        else {
-            auth.createUserWithEmailAndPassword(mail, password).then(user => {
-                const uid = user.user.uid;
-                firebase.firestore().collection('users').doc(uid).set({
-                    name:name,
-                    email:mail,
-                    userId:id,
-                    userUid:uid});
-            }).catch(error => {
+        } else {
+            firebase.auth().createUserWithEmailAndPassword(mail, password)
+            .then(user => {
+                storeUser(user, mail, name, id);
+                setisCreated(true);
+            })
+            .catch(error => {
+                setisCreated(false);
                 if (error.code === 'auth/invalid-email'){
                     setEmailError(true)
                 }
@@ -47,9 +43,27 @@ const Register = () => {
         }
     };
 
+    const showPassword = () => {
+        const password = document.getElementById("password");
+        if (password.type === "password") {
+            password.type = "text";
+        } else {
+            password.type = "password";
+        }
+    };
+
+    const storeUser = (user, mail, name, id) => {
+        const uid = user.user.uid;
+        firebase.firestore().collection('users').doc(uid).set({
+            name:name,
+            email:mail,
+            userId:id,
+            userUid:uid});
+    };
+
     useEffect(() =>
     {
-        auth.onAuthStateChanged(firebaseUser => {
+        firebase.auth().onAuthStateChanged(firebaseUser => {
             if (firebaseUser) {
                 setisCreated(true);
             } else {
@@ -59,7 +73,7 @@ const Register = () => {
     }, []);
 
     if(isCreated === true){
-        return <Redirect to='/' />
+        return <Redirect to='/home' />
     }
 
     return (
@@ -73,12 +87,12 @@ const Register = () => {
                     <form action="#" method="POST" className="form form__login"  onSubmit={createUser}>
                         <div className="form__control">
                             <label className="form__label" htmlFor="name">Nom</label>
-                            <input className="form__input" type="text" name="name" id="name" ref={userName}/>
+                            <input className="form__input" type="text" name="name" id="name" placeholder="Jean Dupont" ref={userName}/>
                         </div>
 
                         <div className="form__control">
                             <label className="form__label" htmlFor="userId">ID fourni par l'institut des Sciences Naturelles</label>
-                            <input className="form__input" type="text" name="userId" id="userId" ref={userId}/>
+                            <input className="form__input" type="text" name="userId" id="userId" placeholder="123456789" ref={userId}/>
                         </div>
 
                         <div className="form__control">
@@ -89,26 +103,26 @@ const Register = () => {
                             <p className="errors">Il existe déja un compte avec cet email</p>
                             }
                             <label className="form__label" htmlFor="email">E-mail</label>
-                            <input className="form__input" type="email" name="email" id="email" ref={userMail}/>
+                            <input className="form__input" type="email" name="email" id="email" placeholder="exemple@email.com" ref={userMail}/>
+
                         </div>
 
-                        <div className="form__control">
+                        <div className="form__control password__input">
                             {weakPass === true &&
                             <p className="errors">Le mot de passe doit avoir 6 caractères minimum</p>
                             }
                             <label className="form__label" htmlFor="password">Mot de passe</label>
                             <input className="form__input" type="password" name="password" id="password" ref={userPassword}/>
+                            <button className="show__pass" type="button" onClick={showPassword}>
+                                <span className="sro">Montrer le mot de passe</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#606a73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            </button>
                         </div>
 
                         <div className="form__control">
                             <button type="submit" className="btn">S'inscrire</button>
                         </div>
                     </form>
-                    <div className="centered">
-                        <Link to='/' className="login__link">
-                            Se connecter
-                        </Link>
-                    </div>
                 </div>
             </section>
         </React.Fragment>

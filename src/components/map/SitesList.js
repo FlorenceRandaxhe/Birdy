@@ -1,16 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import {Link, Redirect} from "react-router-dom";
 import firebase from '../../config/config';
-import Nav from '../common/Nav';
-import GoogleMap from 'google-map-react';
-import Map from './Map'
+import { Map, GoogleApiWrapper, Marker } from 'google-maps-react';
+import Loader from "../common/Loader";
 
-const SiteList = () => {
+const SiteList = (props) => {
     const [leState, setleState] = useState(null);
+    const [long, setLong] = useState(null);
+    const [lat, setLat] = useState(null);
     const [isLogged, setisLogged] = useState([]);
 
     useEffect(() =>
     {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                setLat(position.coords.latitude);
+                setLong(position.coords.longitude);
+            });
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
+
         const fetchData = async () => {
             const db = firebase.firestore();
             const data = await db.collection('sites').get();
@@ -27,42 +37,42 @@ const SiteList = () => {
             setisLogged(false);
         }
     });
+
     if(isLogged === false){
         return <Redirect to='/'/>
     }
     if (leState === null) {
-        return (<div className="bouncing-loader"><div></div><div></div><div></div></div>);
+        return <Loader/>
     }
     return (
         <React.Fragment>
-            <section className="section__bird_list">
+            <section>
                 <div>
-                    <h2>Sites de baguage</h2>
-                    <div>
-                        <Link to={'/createSite'}>Ajouter un nouveau site</Link>
+                    <div className="section__header">
+                        <h2>Sites de baguage</h2>
+                        <Link className="btn__small" to={'/createSite'}>Nouveau site</Link>
                     </div>
-                    <div className="map" style={{ height: '70vh', width: '100%' }}>
-                        <GoogleMap
-                            bootstrapURLKeys={'API key'}
-                            defaultCenter={{
-                                lat: 50.8432252,
-                                lng: 4.4638614
-                            }}
-                            defaultZoom={10}>
-                                {leState.map(map => (
-                                    <Map lat={map.location.lat}
-                                        lng={map.location.lng}
-                                        name={map.name}
-                                        superficie={map.superficie}>
-                                    </Map>
-                                ))}
-                        </GoogleMap>
+                    <div className="map" style={{ height: '60vh', width: '100%' }}>
+                        <Map
+                            google={props.google}
+                            style={ {borderRadius:'5px'}}
+                            zoom={8}
+                            initialCenter={{ lat: lat, lng: long}}
+                        >
+                            {leState.map(map => (
+                                <Marker
+                                    position={{ lat:map.geopoint.latitude,lng: map.geopoint.longitude}}>
+                                </Marker>
+                            ))}
+                        </Map>
                     </div>
                 </div>
             </section>
-            <Nav/>
+
         </React.Fragment>
     )
 };
-
-export default SiteList;
+export default GoogleApiWrapper({
+    apiKey: 'AIzaSyDaH6M1rje-2oIlFkjlJ5QC4pAb79uEb3o'
+})(SiteList);
+//export default SiteList;

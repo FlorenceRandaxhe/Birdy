@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {Link, Redirect} from "react-router-dom";
 import firebase from '../../config/config';
-import Nav from '../common/Nav';
+import Loader from "../common/Loader";
 
 const BirdList = () => {
     const [leState, setleState] = useState(null);
@@ -23,7 +23,7 @@ const BirdList = () => {
             setisLogged(false);
         }
     });
-    firebase.storage().ref().child('bird.jfif').getDownloadURL().then(url => {
+    firebase.storage().ref().child('bird.jpg').getDownloadURL().then(url => {
         let img = document.getElementsByClassName('bird-image');
         for (let i = 0; i < img.length; i++) {
             img[i].src = url;
@@ -33,23 +33,22 @@ const BirdList = () => {
         return <Redirect to='/'/>
     }
     if (leState === null) {
-        return (<div className="bouncing-loader"><div></div><div></div><div></div></div>);
+        return <Loader/>
     }
     return (
         <React.Fragment>
-            <section className="section__bird_list">
-                    <h2 >Encyclopédie</h2>
-                    <div className="list__bird">
-                        {leState.map(bird => (
-                            <article key={bird.id} className="list__item__bird encyclopedia__list">
-                                <Link to={{pathname: '/encyclopedia/' + bird.id}} className="list__item__bird__link"><span className="sro">Voir</span></Link>
-                                <img src='' className="bird-image encyclopedia__img" width="90px" height="90px" alt={bird.name}/>
-                                <h3>{bird.name}</h3>
-                            </article>
-                        ))}
-                    </div>
+            <section>
+                <h2>Encyclopédie</h2>
+                <ul className="list">
+                    {leState.map(bird => (
+                        <li key={bird.id} className="list__item encyclopedia__list">
+                            <Link to={{pathname: '/encyclopedia/' + bird.id}} className="link_over"><span className="sro">Voir</span></Link>
+                            <img src='' className="bird-image encyclopedia__img" width="90px" height="90px" alt={bird.name}/>
+                            <p>{bird.name}</p>
+                        </li>
+                    ))}
+                </ul>
             </section>
-            <Nav/>
         </React.Fragment>
     )
 };

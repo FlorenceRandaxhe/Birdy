@@ -1,5 +1,5 @@
-import React, {useEffect, useRef, useState} from 'react';
-import { Link, Redirect } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react';
+import { Redirect } from 'react-router-dom';
 import firebase from '../config/config';
 
 const Login = () => {
@@ -7,19 +7,23 @@ const Login = () => {
     const [error, setError] = useState(false);
     const userMail = useRef('');
     const userPassword = useRef('');
-    const auth = firebase.auth();
 
     const connectUser = (e) => {
         e.preventDefault();
         const mail = userMail.current.value;
         const password = userPassword.current.value;
-        firebase.auth().signInWithEmailAndPassword(mail, password).catch(function() {
-            setError(true);
+        firebase.auth().signInWithEmailAndPassword(mail, password)
+            .then( function () {
+                setisLogged(true)
+            })
+            .catch(function() {
+                setisLogged(false);
+                setError(true);
         });
     };
 
     useEffect(() => {
-        auth.onAuthStateChanged(firebaseUser => {
+        firebase.auth().onAuthStateChanged(firebaseUser => {
             if (firebaseUser) {
                 setisLogged(true);
             } else {
@@ -42,37 +46,18 @@ const Login = () => {
                     <form action="#" method="POST" className="form form__login" onSubmit={connectUser}>
                         <div className="form__control">
                             <label className="form__label" htmlFor="email">E-mail</label>
-                            <input className="form__input"
-                                   type="email"
-                                   name="email"
-                                   id="email"
-                                   ref={userMail}
-                                   />
+                            <input className="form__input" type="email" name="email" id="email" ref={userMail}/>
                         </div>
-
                         <div className="form__control">
                             <label className="form__label" htmlFor="password">Mot de passe</label>
-                            <input className="form__input"
-                                   type="password"
-                                   name="password"
-                                   id="password"
-                                   ref={userPassword}
-                                   />
+                            <input className="form__input" type="password" name="password" id="password" ref={userPassword}/>
                         </div>
-
                         <div className="form__control">
                             <button type="submit" className="btn">Se connecter</button>
                         </div>
                     </form>
-                    <div className="centered">
-                        <Link to='/register' className="login__link">
-                            S'inscrire
-                        </Link>
-                    </div>
-
                 </div>
             </section>
-
         </React.Fragment>
     )
 };
